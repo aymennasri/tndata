@@ -18,3 +18,5 @@ Imports:
     jsonlite
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+URL: https://github.com/aymennasri/tndata
+BugReports: https://github.com/aymennasri/tndata/issues
