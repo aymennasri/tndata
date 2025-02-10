@@ -9,7 +9,7 @@
 The tndata package simplifies access to Tunisian government open data
 with R. It queries datasets by theme, author, or keywords, retrieves
 metadata, and gets structured results ready for analysis; all through
-the official \<data.gov.tn\> CKAN API.
+the official [data.gov.tn](data.gov.tn) CKAN API.
 
 ## Installation
 
