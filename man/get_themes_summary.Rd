@@ -15,8 +15,7 @@ A tibble (data frame) with two columns:
 }
 \description{
 Fetches and summarizes themes (groups) alongside the number of datasets in each theme
-from the Tunisian data catalog API (data.gov.tn). The results are sorted by dataset count
-in descending order and exclude themes with zero datasets.
+from the Tunisian data catalog API (data.gov.tn).
 }
 \examples{
 \donttest{
