@@ -24,7 +24,8 @@
 
 get_themes_summary <- function() {
   response <- httr::GET("https://catalog.data.gov.tn/api/3/action/group_list",
-                        query = list(all_fields = TRUE))
+    query = list(all_fields = TRUE)
+  )
 
   if (httr::status_code(response) == 200) {
     content <- jsonlite::fromJSON(rawToChar(response$content))
@@ -36,12 +37,12 @@ get_themes_summary <- function() {
       stringsAsFactors = FALSE
     )
 
-    for (i in 1:nrow(groups)) {
+    for (i in seq_len(nrow(groups))) {
       response <- httr::GET("https://catalog.data.gov.tn/api/3/action/group_package_show",
-                            query = list(id = groups$name[i]))
+        query = list(id = groups$name[i])
+      )
 
       if (httr::status_code(response) == 200) {
-
         results <- rbind(results, data.frame(
           theme = groups$display_name[i],
           dataset_count = groups$package_count[i],
@@ -83,8 +84,8 @@ get_themes_summary <- function() {
 #' @examples
 #' \donttest{
 #' try({
-#'  datasets <- get_datasets("agriculture")
-#'  head(datasets)
+#'   datasets <- get_datasets("agriculture")
+#'   head(datasets)
 #' })
 #' }
 #'
@@ -96,49 +97,51 @@ get_themes_summary <- function() {
 #' @importFrom glue glue
 
 get_datasets <- function(keyword, max_results = 100) {
-  api_url = "https://catalog.data.gov.tn/fr/api/3/action/package_search"
+  api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
 
   logger::log_info("Searching for datasets with keyword: {keyword}")
 
-  tryCatch({
-    response <- httr::RETRY(
-      "GET",
-      api_url,
-      query = list(q = keyword, rows = max_results),
-      times = 3
-    )
-    httr::stop_for_status(response)
-
-    content <- httr::content(response, "parsed")
-    if (is.null(content$result$results)) {
-      logger::log_warn("No results found")
-      return(dplyr::tibble())
-    }
-
-    datasets <- purrr::map_df(content$result$results, ~{
-      dplyr::tibble(
-        title = .x$title %||% NA_character_,
-        id = .x$id %||% NA_character_,
-        resources = list(
-          purrr::map_df(.x$resources, ~{
-            dplyr::tibble(
-              name = .x$name %||% NA_character_,
-              format = .x$format %||% NA_character_,
-              url = .x$url %||% NA_character_
-            )
-          })
-        ),
-        created = as.POSIXct(.x$metadata_created) %||% NA
+  tryCatch(
+    {
+      response <- httr::RETRY(
+        "GET",
+        api_url,
+        query = list(q = keyword, rows = max_results),
+        times = 3
       )
-    })
+      httr::stop_for_status(response)
 
-    logger::log_info("Found {nrow(datasets)} datasets")
-    datasets
+      content <- httr::content(response, "parsed")
+      if (is.null(content$result$results)) {
+        logger::log_warn("No results found")
+        return(dplyr::tibble())
+      }
 
-  }, error = function(e) {
-    logger::log_error("Error searching datasets: {conditionMessage(e)}")
-    stop(glue::glue("Failed to search datasets: {conditionMessage(e)}"))
-  })
+      datasets <- purrr::map_df(content$result$results, ~ {
+        dplyr::tibble(
+          title = .x$title %||% NA_character_,
+          id = .x$id %||% NA_character_,
+          resources = list(
+            purrr::map_df(.x$resources, ~ {
+              dplyr::tibble(
+                name = .x$name %||% NA_character_,
+                format = .x$format %||% NA_character_,
+                url = .x$url %||% NA_character_
+              )
+            })
+          ),
+          created = as.POSIXct(.x$metadata_created) %||% NA
+        )
+      })
+
+      logger::log_info("Found {nrow(datasets)} datasets")
+      datasets
+    },
+    error = function(e) {
+      logger::log_error("Error searching datasets: {conditionMessage(e)}")
+      stop(glue::glue("Failed to search datasets: {conditionMessage(e)}"))
+    }
+  )
 }
 
 #' Download Dataset
@@ -154,10 +157,9 @@ get_datasets <- function(keyword, max_results = 100) {
 #' @examples
 #' \donttest{
 #' try({
-#'  download_dataset("DONNÉES CLIMATIQUES STATION Tozeur AVFA", format = "csv")
+#'   download_dataset("DONNÉES CLIMATIQUES STATION Tozeur AVFA", format = "csv")
 #' })
 #' }
-#'
 #'
 #' @export
 #' @importFrom httr GET content stop_for_status write_disk
@@ -171,7 +173,7 @@ get_datasets <- function(keyword, max_results = 100) {
 #' @importFrom fs dir_create
 
 download_dataset <- function(title, download_dir = "datasets", format = NULL) {
-  api_url = "https://catalog.data.gov.tn/fr/api/3/action/package_search"
+  api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
   logger::log_info("Starting download for dataset: {title}")
 
   response <- httr::RETRY(
@@ -185,49 +187,52 @@ download_dataset <- function(title, download_dir = "datasets", format = NULL) {
   content <- httr::content(response, "parsed")
   ds <- content$result$results[[1]]
 
-  if(is.null(ds)) {
+  if (is.null(ds)) {
     logger::log_error("Dataset not found: {title}")
     stop("Dataset not found")
   }
 
-  resources <- purrr::map_df(ds$resources, ~{
+  resources <- purrr::map_df(ds$resources, ~ {
     dplyr::tibble(
       name = .x$name %||% NA_character_,
       format = .x$format %||% NA_character_,
       url = .x$url %||% NA_character_
     )
   }) |>
-    dplyr::mutate(encoded_url = purrr::map_chr(url, ~utils::URLencode(.x)))
+    dplyr::mutate(encoded_url = purrr::map_chr(url, ~ utils::URLencode(.x)))
 
   if (!is.null(format)) {
     logger::log_info("Filtering for format: {format}")
     resources <- resources |>
       dplyr::filter(toupper(format) == toupper(!!format))
 
-    if(nrow(resources) == 0) {
+    if (nrow(resources) == 0) {
       logger::log_error("No resources found with format: {format}")
       stop("No matching resources found")
     }
   }
 
   download_resource <- function(url, name, format) {
-    tryCatch({
-      filename <- paste0(
-        stringr::str_replace_all(name, "\\s+", "_"),
-        ".", stringr::str_to_lower(format)
-      )
-      dest <- file.path(download_dir, filename)
+    tryCatch(
+      {
+        filename <- paste0(
+          stringr::str_replace_all(name, "\\s+", "_"),
+          ".", stringr::str_to_lower(format)
+        )
+        dest <- file.path(download_dir, filename)
 
-      logger::log_info("Downloading {filename}")
-      httr::GET(url, httr::write_disk(dest, overwrite = TRUE)) |>
-        httr::stop_for_status()
+        logger::log_info("Downloading {filename}")
+        httr::GET(url, httr::write_disk(dest, overwrite = TRUE)) |>
+          httr::stop_for_status()
 
-      logger::log_success("Successfully downloaded: {filename}")
-      dest
-    }, error = function(e) {
-      logger::log_error("Failed to download {name}: {conditionMessage(e)}")
-      NULL
-    })
+        logger::log_success("Successfully downloaded: {filename}")
+        dest
+      },
+      error = function(e) {
+        logger::log_error("Failed to download {name}: {conditionMessage(e)}")
+        NULL
+      }
+    )
   }
 
   dir.create(download_dir, recursive = TRUE, showWarnings = FALSE)
@@ -237,7 +242,7 @@ download_dataset <- function(title, download_dir = "datasets", format = NULL) {
   logger::log_info("Starting downloads to directory: {download_dir}")
 
   results <- resources |>
-    purrr::pmap(~download_resource(..3, ..1, ..2)) |>
+    purrr::pmap(~ download_resource(..3, ..1, ..2)) |>
     purrr::compact()
 
   logger::log_info("Download complete: {length(results)} files downloaded")
