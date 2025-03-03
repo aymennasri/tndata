@@ -1,7 +1,7 @@
 #' Summarize Dataset Themes
 #'
-#' Fetches and summarizes themes (groups) alongside the number of datasets in each theme
-#' from the Tunisian data catalog API (data.gov.tn).
+#' Fetches and summarizes themes (groups) alongside the number of datasets in
+#' each theme from the Tunisian data catalog API (data.gov.tn).
 #'
 #' @return A tibble (data frame) with two columns:
 #' \describe{
@@ -32,32 +32,15 @@ get_themes <- function() {
     content <- jsonlite::fromJSON(rawToChar(response$content))
     groups <- content$result
 
+    # Process all records at once rather than in a loop
     results <- data.frame(
-      theme = character(),
-      dataset_count = numeric(),
+      theme = groups$display_name,
+      dataset_count = groups$package_count,
       stringsAsFactors = FALSE
-    )
-
-    for (i in seq_len(nrow(groups))) {
-      response <- httr::GET(
-        "https://catalog.data.gov.tn/api/3/action/group_package_show",
-        query = list(id = groups$name[i])
-      )
-
-      if (httr::status_code(response) == 200) {
-        results <- rbind(
-          results,
-          data.frame(
-            theme = groups$display_name[i],
-            dataset_count = groups$package_count[i],
-            stringsAsFactors = FALSE
-          )
-        ) |>
-          dplyr::filter(dataset_count != 0) |>
-          dplyr::arrange(dplyr::desc(dataset_count)) |>
-          dplyr::tibble()
-      }
-    }
+    ) |>
+      dplyr::filter(.data$dataset_count != 0) |>
+      dplyr::arrange(dplyr::desc(.data$dataset_count)) |>
+      dplyr::tibble()
 
     return(results)
   } else {
@@ -67,10 +50,12 @@ get_themes <- function() {
 
 #' List Available Datasets
 #'
-#' Fetches datasets by keyword
+#' Fetches datasets by keyword and/or author
 #'
 #' @param keyword Character. Keyword to search for in dataset titles.
-#' @param max_results Numeric. Maximum number of datasets to return, defaults to 100.
+#' @param author Character. Author name to filter datasets by.
+#' @param max_results Numeric. Maximum number of datasets to return, defaults
+#'   to 100.
 #'
 #' @return A tibble (data frame) with the following columns:
 #' \describe{
@@ -108,7 +93,14 @@ get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
   # Build query parameters
   query_parts <- c()
   if (!is.null(keyword)) query_parts <- c(query_parts, keyword)
-  if (!is.null(author)) query_parts <- c(query_parts, paste0("author:", author))
+
+  # Fix: Use proper filter query for author
+  if (!is.null(author)) {
+    fq_author <- paste0("author:", author)
+  } else {
+    fq_author <- NULL
+  }
+
   query_string <- paste(query_parts, collapse = " ")
 
   logger::log_info("Searching for datasets with query: {query_string}")
@@ -117,7 +109,13 @@ get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
       response <- httr::RETRY(
         "GET",
         api_url,
-        query = list(q = query_string, rows = max_results),
+        query = list(
+          q = query_string,
+          rows = max_results,
+          fq = fq_author,
+          include_private = FALSE,
+          include_drafts = FALSE
+        ),
         times = 3
       )
       httr::stop_for_status(response)
@@ -186,12 +184,16 @@ get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
 
 #' List Authors/Organizations
 #'
-#' Retrieves organizations data from the Tunisian data catalog API (data.gov.tn).
-#' (Caution - this function may be slow if you choose to retrieve all organizations)
+#' Retrieves organizations data from the Tunisian data catalog API
+#' (data.gov.tn).
+#' (Caution - this function may be slow if you choose to retrieve all
+#' organizations)
 #'
-#' @param limit Integer. Maximum number of organizations to return, defaults to 10.
+#' @param limit Integer. Maximum number of organizations to return, defaults
+#'   to 10.
 #'
-#' @return A data frame with columns for id, name, dataset_count, and description.
+#' @return A data frame with columns for id, name, dataset_count, and
+#'   description.
 #'
 #' @export
 #' @importFrom httr GET content
@@ -226,8 +228,9 @@ get_authors <- function(limit = 20) {
       description = org$description %||% NA_character_,
       image_url = org$image_url %||% NA_character_
     )
-  }) |> dplyr::filter(dataset_count > 0)  |>
-    dplyr::arrange(dplyr::desc(dataset_count))
+  }) |>
+    dplyr::filter(.data$dataset_count > 0) |>
+    dplyr::arrange(dplyr::desc(.data$dataset_count))
 
   logger::log_success("Retrieved {nrow(authors)} organizations")
   return(authors)
@@ -254,9 +257,6 @@ get_authors <- function(limit = 20) {
 #' @importFrom logger log_info log_error
 
 get_keywords <- function(limit = 10, query = NULL) {
-  # # Use the tag_list action for more accurate results
-  # api_url <- "https://catalog.data.gov.tn/fr/api/3/action/tag_list"
-
   # For complete tag details with counts, use package_search facets
   facet_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
 
@@ -306,7 +306,7 @@ get_keywords <- function(limit = 10, query = NULL) {
   )
 
   keywords <- keywords |>
-    dplyr::arrange(dplyr::desc(count))
+    dplyr::arrange(dplyr::desc(.data$count))
 
   logger::log_info("Retrieved {nrow(keywords)} keywords")
   return(keywords)

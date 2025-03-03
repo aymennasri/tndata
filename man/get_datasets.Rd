@@ -9,7 +9,10 @@ get_datasets(keyword = NULL, author = NULL, max_results = 100)
 \arguments{
 \item{keyword}{Character. Keyword to search for in dataset titles.}
 
-\item{max_results}{Numeric. Maximum number of datasets to return, defaults to 100.}
+\item{author}{Character. Author name to filter datasets by.}
+
+\item{max_results}{Numeric. Maximum number of datasets to return, defaults
+to 100.}
 }
 \value{
 A tibble (data frame) with the following columns:
@@ -27,7 +30,7 @@ A tibble (data frame) with the following columns:
 }
 }
 \description{
-Fetches datasets by keyword
+Fetches datasets by keyword and/or author
 }
 \examples{
 \donttest{

@@ -7,12 +7,16 @@
 get_authors(limit = 20)
 }
 \arguments{
-\item{limit}{Integer. Maximum number of organizations to return, defaults to 10.}
+\item{limit}{Integer. Maximum number of organizations to return, defaults
+to 10.}
 }
 \value{
-A data frame with columns for id, name, dataset_count, and description.
+A data frame with columns for id, name, dataset_count, and
+description.
 }
 \description{
-Retrieves organizations data from the Tunisian data catalog API (data.gov.tn).
-(Caution - this function may be slow if you choose to retrieve all organizations)
+Retrieves organizations data from the Tunisian data catalog API
+(data.gov.tn).
+(Caution - this function may be slow if you choose to retrieve all
+organizations)
 }

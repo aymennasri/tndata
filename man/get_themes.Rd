@@ -14,8 +14,8 @@ A tibble (data frame) with two columns:
 }
 }
 \description{
-Fetches and summarizes themes (groups) alongside the number of datasets in each theme
-from the Tunisian data catalog API (data.gov.tn).
+Fetches and summarizes themes (groups) alongside the number of datasets in
+each theme from the Tunisian data catalog API (data.gov.tn).
 }
 \examples{
 \donttest{
