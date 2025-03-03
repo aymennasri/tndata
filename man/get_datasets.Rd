@@ -4,7 +4,7 @@
 \alias{get_datasets}
 \title{List Available Datasets}
 \usage{
-get_datasets(keyword, max_results = 100)
+get_datasets(keyword = NULL, author = NULL, max_results = 100)
 }
 \arguments{
 \item{keyword}{Character. Keyword to search for in dataset titles.}
@@ -32,8 +32,8 @@ Fetches datasets by keyword
 \examples{
 \donttest{
 try({
- datasets <- get_datasets("agriculture")
- head(datasets)
+  datasets <- get_datasets("agriculture")
+  head(datasets)
 })
 }
 

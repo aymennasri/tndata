@@ -12,7 +12,7 @@
 #' @examples
 #' \donttest{
 #' try({
-#'   themes_summary <- get_themes_summary()
+#'   themes_summary <- get_themes()
 #'   head(themes_summary)
 #' })
 #' }
@@ -22,8 +22,9 @@
 #' @importFrom jsonlite fromJSON
 #' @importFrom dplyr filter arrange desc tibble
 
-get_themes_summary <- function() {
-  response <- httr::GET("https://catalog.data.gov.tn/api/3/action/group_list",
+get_themes <- function() {
+  response <- httr::GET(
+    "https://catalog.data.gov.tn/api/3/action/group_list",
     query = list(all_fields = TRUE)
   )
 
@@ -38,16 +39,20 @@ get_themes_summary <- function() {
     )
 
     for (i in seq_len(nrow(groups))) {
-      response <- httr::GET("https://catalog.data.gov.tn/api/3/action/group_package_show",
+      response <- httr::GET(
+        "https://catalog.data.gov.tn/api/3/action/group_package_show",
         query = list(id = groups$name[i])
       )
 
       if (httr::status_code(response) == 200) {
-        results <- rbind(results, data.frame(
-          theme = groups$display_name[i],
-          dataset_count = groups$package_count[i],
-          stringsAsFactors = FALSE
-        )) |>
+        results <- rbind(
+          results,
+          data.frame(
+            theme = groups$display_name[i],
+            dataset_count = groups$package_count[i],
+            stringsAsFactors = FALSE
+          )
+        ) |>
           dplyr::filter(dataset_count != 0) |>
           dplyr::arrange(dplyr::desc(dataset_count)) |>
           dplyr::tibble()
@@ -95,46 +100,81 @@ get_themes_summary <- function() {
 #' @importFrom purrr map_df
 #' @importFrom logger log_info log_warn log_error
 #' @importFrom glue glue
+#' @importFrom lubridate ymd_hms
 
-get_datasets <- function(keyword, max_results = 100) {
+get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
 
-  logger::log_info("Searching for datasets with keyword: {keyword}")
+  # Build query parameters
+  query_parts <- c()
+  if (!is.null(keyword)) query_parts <- c(query_parts, keyword)
+  if (!is.null(author)) query_parts <- c(query_parts, paste0("author:", author))
+  query_string <- paste(query_parts, collapse = " ")
 
+  logger::log_info("Searching for datasets with query: {query_string}")
   tryCatch(
     {
       response <- httr::RETRY(
         "GET",
         api_url,
-        query = list(q = keyword, rows = max_results),
+        query = list(q = query_string, rows = max_results),
         times = 3
       )
       httr::stop_for_status(response)
-
       content <- httr::content(response, "parsed")
+
+      total_count <- content$result$count %||% 0
+
       if (is.null(content$result$results)) {
         logger::log_warn("No results found")
         return(dplyr::tibble())
       }
+      datasets <- purrr::map_df(
+        content$result$results,
+        ~ {
+          # Format dates
+          created <- if (!is.null(.x$metadata_created)) {
+            dt <- lubridate::ymd_hms(.x$metadata_created, tz = "UTC")
+            format(dt, "%Y-%m-%d %H:%M:%S")
+          } else {
+            NA_character_
+          }
 
-      datasets <- purrr::map_df(content$result$results, ~ {
-        dplyr::tibble(
-          title = .x$title %||% NA_character_,
-          id = .x$id %||% NA_character_,
-          resources = list(
-            purrr::map_df(.x$resources, ~ {
-              dplyr::tibble(
-                name = .x$name %||% NA_character_,
-                format = .x$format %||% NA_character_,
-                url = .x$url %||% NA_character_
+          modified <- if (!is.null(.x$metadata_modified)) {
+            dt <- lubridate::ymd_hms(.x$metadata_modified, tz = "UTC")
+            format(dt, "%Y-%m-%d %H:%M:%S")
+          } else {
+            NA_character_
+          }
+
+          dplyr::tibble(
+            id = .x$id %||% NA_character_,
+            title = .x$title %||% NA_character_,
+            name = .x$name %||% NA_character_,
+            author = .x$author %||% NA_character_,
+            notes = .x$notes %||% NA_character_,
+            organization = if (!is.null(.x$organization))
+              .x$organization$name else NA_character_,
+            created = created,
+            modified = modified,
+            resources = list(
+              purrr::map_df(
+                .x$resources,
+                ~ {
+                  dplyr::tibble(
+                    name = .x$name %||% NA_character_,
+                    format = .x$format %||% NA_character_,
+                    url = .x$url %||% NA_character_
+                  )
+                }
               )
-            })
-          ),
-          created = as.POSIXct(.x$metadata_created) %||% NA
-        )
-      })
-
-      logger::log_info("Found {nrow(datasets)} datasets")
+            )
+          )
+        }
+      )
+      logger::log_info(
+        "Displaying {nrow(datasets)} out of {total_count} total datasets"
+      )
       datasets
     },
     error = function(e) {
@@ -144,107 +184,130 @@ get_datasets <- function(keyword, max_results = 100) {
   )
 }
 
-#' Download Dataset
+#' List Authors/Organizations
 #'
-#' Downloads a dataset from the Tunisian data catalog API (data.gov.tn).
+#' Retrieves organizations data from the Tunisian data catalog API (data.gov.tn).
+#' (Caution - this function may be slow if you choose to retrieve all organizations)
 #'
-#' @param title Character. Title of the dataset to download.
-#' @param download_dir Character. Directory to save the downloaded dataset at, defaults to "datasets".
-#' @param format Character. Format of the dataset to download.
+#' @param limit Integer. Maximum number of organizations to return, defaults to 10.
 #'
-#' @return The demanded dataset in the demanded path.
+#' @return A data frame with columns for id, name, dataset_count, and description.
+#'
+#' @export
+#' @importFrom httr GET content
+#' @importFrom dplyr arrange desc filter tibble
+#' @importFrom logger log_info log_warn log_error log_success
+
+get_authors <- function(limit = 20) {
+  logger::log_info("Retrieving top {limit} organizations by dataset count")
+
+  response <- httr::GET(
+    "https://catalog.data.gov.tn/fr/api/3/action/organization_list",
+    query = list(
+      all_fields = TRUE,
+      include_dataset_count = TRUE,
+      sort = "package_count desc",
+      limit = limit
+    )
+  )
+
+  if (httr::status_code(response) != 200) {
+    logger::log_error("API request failed: {httr::status_code(response)}")
+    return(dplyr::tibble())
+  }
+
+  content <- httr::content(response, "parsed")
+
+  authors <- purrr::map_df(content$result, function(org) {
+    dplyr::tibble(
+      id = org$id,
+      name = org$display_name %||% org$title %||% org$name,
+      dataset_count = org$package_count %||% 0,
+      description = org$description %||% NA_character_,
+      image_url = org$image_url %||% NA_character_
+    )
+  }) |> dplyr::filter(dataset_count > 0)  |>
+    dplyr::arrange(dplyr::desc(dataset_count))
+
+  logger::log_success("Retrieved {nrow(authors)} organizations")
+  return(authors)
+}
+
+#' List Dataset Keywords/Tags
+#'
+#' Retrieves a list of unique keywords/tags from the Tunisian data catalog API.
+#'
+#' @param limit Integer. Maximum number of tags to return (default: 10).
+#' @param query Character. Optional search string to filter tags.
+#'
+#' @return A data frame of keywords/tags with counts.
 #'
 #' @examples
 #' \donttest{
-#' try({
-#'   download_dataset("DONNÉES CLIMATIQUES STATION Tozeur AVFA", format = "csv")
-#' })
+#' keywords <- get_keywords(limit = 10)
 #' }
 #'
 #' @export
-#' @importFrom httr GET content stop_for_status write_disk
-#' @importFrom dplyr filter mutate
-#' @importFrom purrr pmap compact
-#' @importFrom fs dir_delete
-#' @importFrom stringr str_replace_all str_to_lower
-#' @importFrom utils URLencode
-#' @importFrom logger log_info log_error log_success
-#' @importFrom glue glue
-#' @importFrom fs dir_create
+#' @importFrom httr GET content stop_for_status
+#' @importFrom dplyr arrange desc
+#' @importFrom purrr map_df
+#' @importFrom logger log_info log_error
 
-download_dataset <- function(title, download_dir = "datasets", format = NULL) {
-  api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
-  logger::log_info("Starting download for dataset: {title}")
+get_keywords <- function(limit = 10, query = NULL) {
+  # # Use the tag_list action for more accurate results
+  # api_url <- "https://catalog.data.gov.tn/fr/api/3/action/tag_list"
+
+  # For complete tag details with counts, use package_search facets
+  facet_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
+
+  logger::log_info("Retrieving dataset keywords")
+
+  query_params <- list(
+    facet = "true",
+    facet.field = '["tags"]',
+    facet.limit = limit
+  )
+
+  if (!is.null(query)) {
+    query_params$q <- query
+  }
 
   response <- httr::RETRY(
     "GET",
-    api_url,
-    query = list(q = title, rows = 1),
+    facet_url,
+    query = query_params,
     times = 3
   )
+
   httr::stop_for_status(response)
-
   content <- httr::content(response, "parsed")
-  ds <- content$result$results[[1]]
 
-  if (is.null(ds)) {
-    logger::log_error("Dataset not found: {title}")
-    stop("Dataset not found")
+  if (
+    is.null(content$result$search_facets$tags) ||
+      length(content$result$search_facets$tags$items) == 0
+  ) {
+    logger::log_error("No keywords found")
+    return(data.frame(
+      keyword = character(0),
+      count = integer(0),
+      stringsAsFactors = FALSE
+    ))
   }
 
-  resources <- purrr::map_df(ds$resources, ~ {
-    dplyr::tibble(
-      name = .x$name %||% NA_character_,
-      format = .x$format %||% NA_character_,
-      url = .x$url %||% NA_character_
-    )
-  }) |>
-    dplyr::mutate(encoded_url = purrr::map_chr(url, ~ utils::URLencode(.x)))
-
-  if (!is.null(format)) {
-    logger::log_info("Filtering for format: {format}")
-    resources <- resources |>
-      dplyr::filter(toupper(format) == toupper(!!format))
-
-    if (nrow(resources) == 0) {
-      logger::log_error("No resources found with format: {format}")
-      stop("No matching resources found")
+  keywords <- purrr::map_df(
+    content$result$search_facets$tags$items,
+    function(item) {
+      data.frame(
+        keyword = item$name,
+        count = item$count,
+        stringsAsFactors = FALSE
+      )
     }
-  }
+  )
 
-  download_resource <- function(url, name, format) {
-    tryCatch(
-      {
-        filename <- paste0(
-          stringr::str_replace_all(name, "\\s+", "_"),
-          ".", stringr::str_to_lower(format)
-        )
-        dest <- file.path(download_dir, filename)
+  keywords <- keywords |>
+    dplyr::arrange(dplyr::desc(count))
 
-        logger::log_info("Downloading {filename}")
-        httr::GET(url, httr::write_disk(dest, overwrite = TRUE)) |>
-          httr::stop_for_status()
-
-        logger::log_success("Successfully downloaded: {filename}")
-        dest
-      },
-      error = function(e) {
-        logger::log_error("Failed to download {name}: {conditionMessage(e)}")
-        NULL
-      }
-    )
-  }
-
-  dir.create(download_dir, recursive = TRUE, showWarnings = FALSE)
-  fs::dir_delete(download_dir)
-  dir.create(download_dir)
-
-  logger::log_info("Starting downloads to directory: {download_dir}")
-
-  results <- resources |>
-    purrr::pmap(~ download_resource(..3, ..1, ..2)) |>
-    purrr::compact()
-
-  logger::log_info("Download complete: {length(results)} files downloaded")
-  invisible(results)
+  logger::log_info("Retrieved {nrow(keywords)} keywords")
+  return(keywords)
 }
