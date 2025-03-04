@@ -4,12 +4,19 @@
 \alias{get_datasets}
 \title{List Available Datasets}
 \usage{
-get_datasets(keyword = NULL, author = NULL, max_results = 100)
+get_datasets(
+  keyword = NULL,
+  author = NULL,
+  organization = NULL,
+  max_results = 100
+)
 }
 \arguments{
 \item{keyword}{Character. Keyword to search for in dataset titles.}
 
 \item{author}{Character. Author name to filter datasets by.}
+
+\item{organization}{Character. Organization name to filter datasets by.}
 
 \item{max_results}{Numeric. Maximum number of datasets to return, defaults
 to 100.}

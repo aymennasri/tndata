@@ -54,6 +54,7 @@ get_themes <- function() {
 #'
 #' @param keyword Character. Keyword to search for in dataset titles.
 #' @param author Character. Author name to filter datasets by.
+#' @param organization Character. Organization name to filter datasets by.
 #' @param max_results Numeric. Maximum number of datasets to return, defaults
 #'   to 100.
 #'
@@ -88,34 +89,145 @@ get_themes <- function() {
 #' @importFrom glue glue
 #' @importFrom lubridate ymd_hms
 
-get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
+get_datasets <- function(keyword = NULL, author = NULL, organization = NULL, max_results = 100) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
 
-  # Handle author filtering
-  if (!is.null(author)) {
-    fq_author <- paste0("author:", author)
-    logger::log_info("Adding author filter: {author}")
-  } else {
-    fq_author <- NULL
-    logger::log_info("No author filter specified")
-  }
-
-  if (!is.null(keyword)) {
-    logger::log_info("Adding keyword filter: {keyword}")
-  } else {
-    logger::log_info("No keyword filter specified")
-  }
+  # Log filter information
+  if (!is.null(keyword)) logger::log_info("Adding keyword filter: {keyword}")
+  if (!is.null(author)) logger::log_info("Adding author filter: {author}")
+  if (!is.null(organization)) logger::log_info("Adding organization filter: {organization}")
 
   logger::log_info("Searching for datasets...")
+
+  tryCatch({
+    fq_parts <- c()
+
+    if (!is.null(author)) {
+      fq_parts <- c(fq_parts, paste0("author:", author))
+    }
+
+    if (!is.null(organization)) {
+      fq_parts <- c(fq_parts, paste0("organization:", organization))
+    }
+
+    # Combine filter parts with AND
+    fq <- if (length(fq_parts) > 0) paste(fq_parts, collapse = " AND ") else NULL
+
+    # Build request
+    req <- httr2::request(api_url) |>
+      httr2::req_url_query(
+        q = if(is.null(keyword)) "*:*" else keyword,
+        rows = max_results,
+        fq = fq,
+        include_private = TRUE,
+        include_drafts = TRUE
+      ) |>
+      httr2::req_retry(max_tries = 3)
+
+    response <- httr2::req_perform(req)
+    httr2::resp_check_status(response)
+    content <- httr2::resp_body_json(response)
+
+    total_count <- content$result$count %||% 0
+
+    if (is.null(content$result$results)) {
+      logger::log_warn("No results found")
+      return(dplyr::tibble())
+    }
+
+    datasets <- purrr::map_df(
+      content$result$results,
+      ~ {
+        # Format dates
+        created <- if (!is.null(.x$metadata_created)) {
+          dt <- lubridate::ymd_hms(.x$metadata_created, tz = "UTC")
+          format(dt, "%Y-%m-%d %H:%M:%S")
+        } else {
+          NA_character_
+        }
+
+        modified <- if (!is.null(.x$metadata_modified)) {
+          dt <- lubridate::ymd_hms(.x$metadata_modified, tz = "UTC")
+          format(dt, "%Y-%m-%d %H:%M:%S")
+        } else {
+          NA_character_
+        }
+
+        dplyr::tibble(
+          id = .x$id %||% NA_character_,
+          title = .x$title %||% NA_character_,
+          name = .x$name %||% NA_character_,
+          author = .x$author %||% NA_character_,
+          notes = .x$notes %||% NA_character_,
+          organization = if (!is.null(.x$organization))
+            .x$organization$name else NA_character_,
+          created = created,
+          modified = modified,
+          resources = list(
+            purrr::map_df(
+              .x$resources,
+              ~ {
+                dplyr::tibble(
+                  name = .x$name %||% NA_character_,
+                  format = .x$format %||% NA_character_,
+                  url = .x$url %||% NA_character_
+                )
+              }
+            )
+          )
+        )
+      }
+    )
+
+    logger::log_info("Displaying {nrow(datasets)} out of {total_count} total datasets")
+    datasets
+  },
+  error = function(e) {
+    logger::log_error("Error searching datasets: {conditionMessage(e)}")
+    stop(glue::glue("Failed to search datasets: {conditionMessage(e)}"))
+  })
+}
+
+#' List All Authors in the Dataset Catalog
+#'
+#' Retrieves a list of all authors who have contributed datasets to the catalog
+#' by fetching datasets and extracting unique author information.
+#'
+#' @param max_datasets Numeric. Maximum number of datasets to retrieve for author extraction, defaults to 1000.
+#'
+#' @return A tibble (data frame) with the following columns:
+#' \describe{
+#'  \item{name}{Character. Name of the author.}
+#'  \item{count}{Numeric. Number of datasets contributed by this author.}
+#' }
+#'
+#' @examples
+#' \donttest{
+#' try({
+#'   authors <- get_authors()
+#'   head(authors)
+#' })
+#' }
+#'
+#' @export
+#' @importFrom httr2 request req_url_query req_perform req_retry
+#' @importFrom httr2 resp_body_json resp_check_status
+#' @importFrom dplyr tibble count arrange desc
+#' @importFrom logger log_info log_warn log_error
+#' @importFrom glue glue
+
+get_authors <- function(max_datasets = 1000) {
+  api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
+
+  logger::log_info("Fetching datasets to extract author information...")
+
   tryCatch(
     {
+      # Request datasets with large row count to capture most authors
       req <- httr2::request(api_url) |>
         httr2::req_url_query(
-          q = if(is.null(keyword)) "*:*" else keyword,
-          rows = max_results,
-          fq = fq_author,
-          include_private = TRUE,
-          include_drafts = TRUE
+          q = "*:*",
+          rows = max_datasets
         ) |>
         httr2::req_retry(max_tries = 3)
 
@@ -123,68 +235,46 @@ get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
       httr2::resp_check_status(response)
       content <- httr2::resp_body_json(response)
 
-      total_count <- content$result$count %||% 0
+      # Extract author information from datasets
+      if (
+        !is.null(content$result$results) && length(content$result$results) > 0
+      ) {
+        # Extract author from each dataset
+        authors <- sapply(content$result$results, function(x) {
+          if (!is.null(x$author) && x$author != "") {
+            return(x$author)
+          } else {
+            return(NA_character_)
+          }
+        })
 
-      if (is.null(content$result$results)) {
-        logger::log_warn("No results found")
-        return(dplyr::tibble())
+        # Remove NA values
+        authors <- authors[!is.na(authors)]
+
+        # Count occurrences of each author
+        author_tibble <- data.frame(name = authors) |>
+          dplyr::count(name, name = "count") |>
+          dplyr::arrange(dplyr::desc(count))
+
+        logger::log_info(
+          "Successfully extracted {nrow(author_tibble)} unique authors from {length(authors)} datasets"
+        )
+        return(author_tibble)
+      } else {
+        logger::log_warn("No datasets found to extract author information")
+        return(dplyr::tibble(name = character(0), count = integer(0)))
       }
-      datasets <- purrr::map_df(
-        content$result$results,
-        ~ {
-          # Format dates
-          created <- if (!is.null(.x$metadata_created)) {
-            dt <- lubridate::ymd_hms(.x$metadata_created, tz = "UTC")
-            format(dt, "%Y-%m-%d %H:%M:%S")
-          } else {
-            NA_character_
-          }
-
-          modified <- if (!is.null(.x$metadata_modified)) {
-            dt <- lubridate::ymd_hms(.x$metadata_modified, tz = "UTC")
-            format(dt, "%Y-%m-%d %H:%M:%S")
-          } else {
-            NA_character_
-          }
-
-          dplyr::tibble(
-            id = .x$id %||% NA_character_,
-            title = .x$title %||% NA_character_,
-            name = .x$name %||% NA_character_,
-            author = .x$author %||% NA_character_,
-            notes = .x$notes %||% NA_character_,
-            organization = if (!is.null(.x$organization))
-              .x$organization$name else NA_character_,
-            created = created,
-            modified = modified,
-            resources = list(
-              purrr::map_df(
-                .x$resources,
-                ~ {
-                  dplyr::tibble(
-                    name = .x$name %||% NA_character_,
-                    format = .x$format %||% NA_character_,
-                    url = .x$url %||% NA_character_
-                  )
-                }
-              )
-            )
-          )
-        }
-      )
-      logger::log_info(
-        "Displaying {nrow(datasets)} out of {total_count} total datasets"
-      )
-      datasets
     },
     error = function(e) {
-      logger::log_error("Error searching datasets: {conditionMessage(e)}")
-      stop(glue::glue("Failed to search datasets: {conditionMessage(e)}"))
+      logger::log_error(
+        "Error fetching datasets for author extraction: {conditionMessage(e)}"
+      )
+      stop(glue::glue("Failed to retrieve authors: {conditionMessage(e)}"))
     }
   )
 }
 
-#' List Authors/Organizations
+#' List Organizations
 #'
 #' Retrieves organizations data from the Tunisian data catalog API
 #' (data.gov.tn) using faceted search. This function returns organizations

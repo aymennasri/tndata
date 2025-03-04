@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_summaries.R
 \name{get_organizations}
 \alias{get_organizations}
-\title{List Authors/Organizations}
+\title{List Organizations}
 \usage{
 get_organizations(min_count = 1)
 }
