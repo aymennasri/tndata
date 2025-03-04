@@ -3,22 +3,24 @@ Title: Fetch datasets from the Official Tunisian Data Catalog
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Aymen", "Nasri",
+      "Aymen", "Nasri", ,
       email = "aymennasrii@proton.me",
       role = c("aut", "cre", "cph")
     )
   )
-Description: Simplifies access to Tunisian government open data with R. 
+Description: Simplifies access to Tunisian government open data with R.
       Queries datasets by theme, author, or keywords, retrieves metadata, and gets structured results ready for analysis; all through the official <data.gov.tn> CKAN API.
 License: Apache License (>= 2)
 Encoding: UTF-8
-Imports: 
+Imports:
     dplyr,
     fs,
     glue,
     httr,
+    httr2,
     jsonlite,
     logger,
+    lubridate,
     purrr,
     stringr
 Roxygen: list(markdown = TRUE)

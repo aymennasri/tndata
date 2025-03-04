@@ -9,7 +9,8 @@ download_dataset(title, download_dir = "datasets", format = NULL)
 \arguments{
 \item{title}{Character. Title of the dataset to download.}
 
-\item{download_dir}{Character. Directory to save the downloaded dataset at, defaults to "datasets".}
+\item{download_dir}{Character. Directory to save the downloaded dataset at,
+defaults to "datasets".}
 
 \item{format}{Character. Format of the dataset to download.}
 }
