@@ -91,19 +91,23 @@ get_themes <- function() {
 get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
 
-  # Build query parameters
-  query_parts <- c()
-  if (!is.null(keyword)) query_parts <- c(query_parts, keyword)
-
+  # Handle author filtering
   if (!is.null(author)) {
     fq_author <- paste0("author:", author)
+    logger::log_info("Adding author filter: {author}")
   } else {
     fq_author <- NULL
+    logger::log_info("No author filter specified")
   }
 
-  query_string <- paste(query_parts, collapse = " ")
+  if (!is.null(keyword)) {
+    query_parts <- c(query_parts, keyword)
+    logger::log_info("Adding keyword filter: {keyword}")
+  } else {
+    logger::log_info("No keyword filter specified")
+  }
 
-  logger::log_info("Searching for datasets with query: {query_string}")
+  logger::log_info("Searching for datasets...")
   tryCatch(
     {
       req <- httr2::request(api_url) |>
