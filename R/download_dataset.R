@@ -2,7 +2,7 @@
 #'
 #' Downloads a dataset from the Tunisian data catalog API (data.gov.tn).
 #'
-#' @param title Character. Title of the dataset to download.
+#' @param title Character. Display name of the dataset to download.
 #' @param download_dir Character. Directory to save the downloaded dataset at,
 #'   defaults to "datasets".
 #' @param format Character. Format of the dataset to download.
@@ -12,7 +12,7 @@
 #' @examples
 #' \donttest{
 #' try({
-#'   download_dataset("DONNÉES CLIMATIQUES STATION Tozeur AVFA", format = "csv")
+#'   download_dataset("Ressources en eau- Gouvernorat de Kasserine", format = "xls")
 #' })
 #' }
 #'

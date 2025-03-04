@@ -7,7 +7,7 @@
 download_dataset(title, download_dir = "datasets", format = NULL)
 }
 \arguments{
-\item{title}{Character. Title of the dataset to download.}
+\item{title}{Character. Display name of the dataset to download.}
 
 \item{download_dir}{Character. Directory to save the downloaded dataset at,
 defaults to "datasets".}
@@ -23,7 +23,7 @@ Downloads a dataset from the Tunisian data catalog API (data.gov.tn).
 \examples{
 \donttest{
 try({
-  download_dataset("DONNÉES CLIMATIQUES STATION Tozeur AVFA", format = "csv")
+  download_dataset("Ressources en eau- Gouvernorat de Kasserine", format = "xls")
 })
 }
 
