@@ -1,3 +1,5 @@
+utils::globalVariables(c(".data"))
+
 #' Download a resource from a URL
 #'
 #' @param url Character. URL of the resource to download.
