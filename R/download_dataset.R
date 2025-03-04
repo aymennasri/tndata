@@ -3,7 +3,8 @@
 #' Downloads a dataset from the Tunisian data catalog API (data.gov.tn).
 #'
 #' @param title Character. Title of the dataset to download.
-#' @param download_dir Character. Directory to save the downloaded dataset at, defaults to "datasets".
+#' @param download_dir Character. Directory to save the downloaded dataset at,
+#'   defaults to "datasets".
 #' @param format Character. Format of the dataset to download.
 #'
 #' @return The demanded dataset in the demanded path.
@@ -16,7 +17,7 @@
 #' }
 #'
 #' @export
-#' @importFrom httr GET content stop_for_status write_disk
+#' @importFrom httr2 request req_url_query req_retry req_perform resp_body_json
 #' @importFrom dplyr filter mutate
 #' @importFrom purrr pmap compact
 #' @importFrom fs dir_delete
@@ -30,15 +31,12 @@ download_dataset <- function(title, download_dir = "datasets", format = NULL) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
   logger::log_info("Starting download for dataset: {title}")
 
-  response <- httr::RETRY(
-    "GET",
-    api_url,
-    query = list(q = title, rows = 1),
-    times = 3
-  )
-  httr::stop_for_status(response)
+  response <- httr2::request(api_url) |>
+    httr2::req_url_query(q = title, rows = 1) |>
+    httr2::req_retry(max_tries = 3) |>
+    httr2::req_perform()
 
-  content <- httr::content(response, "parsed")
+  content <- httr2::resp_body_json(response)
   ds <- content$result$results[[1]]
 
   if (is.null(ds)) {
