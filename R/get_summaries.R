@@ -101,7 +101,6 @@ get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
   }
 
   if (!is.null(keyword)) {
-    query_parts <- c(query_parts, keyword)
     logger::log_info("Adding keyword filter: {keyword}")
   } else {
     logger::log_info("No keyword filter specified")
@@ -112,11 +111,11 @@ get_datasets <- function(keyword = NULL, author = NULL, max_results = 100) {
     {
       req <- httr2::request(api_url) |>
         httr2::req_url_query(
-          q = query_string,
+          q = if(is.null(keyword)) "*:*" else keyword,
           rows = max_results,
           fq = fq_author,
-          include_private = FALSE,
-          include_drafts = FALSE
+          include_private = TRUE,
+          include_drafts = TRUE
         ) |>
         httr2::req_retry(max_tries = 3)
 
