@@ -253,7 +253,7 @@ get_authors <- function(max_datasets = 1000) {
 
         # Count occurrences of each author
         author_tibble <- data.frame(name = authors) |>
-          dplyr::count(name, name = "count") |>
+          dplyr::count(.data$name, name = "count") |>
           dplyr::arrange(dplyr::desc(count))
 
         logger::log_info(
@@ -368,7 +368,9 @@ get_organizations <- function(min_count = 1) {
 #'
 #' @examples
 #' \donttest{
+#' try({
 #' keywords <- get_keywords(limit = 10)
+#' })
 #' }
 #'
 #' @export

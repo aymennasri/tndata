@@ -19,7 +19,9 @@ Retrieves a list of unique keywords/tags from the Tunisian data catalog API.
 }
 \examples{
 \donttest{
+try({
 keywords <- get_keywords(limit = 10)
+})
 }
 
 }
