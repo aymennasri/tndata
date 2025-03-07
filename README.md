@@ -8,6 +8,8 @@
 [![](https://cranlogs.r-pkg.org/badges/tndata)](https://cran.r-project.org/package=tndata)
 <!-- badges: end -->
 
+## Overview
+
 The tndata package simplifies access to Tunisian government open data
 with R. It queries datasets by theme, author, or keywords, retrieves
 metadata, and gets structured results ready for analysis; all through
