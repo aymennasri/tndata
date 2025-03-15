@@ -21,11 +21,9 @@ Retrieves a list of all authors who have contributed datasets to the catalog
 by fetching datasets and extracting unique author information.
 }
 \examples{
-\donttest{
 try({
-  authors <- get_authors()
+  authors <- get_authors(max_datasets = 100)
   head(authors)
 })
-}
 
 }

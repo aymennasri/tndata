@@ -12,7 +12,11 @@
 #' @examples
 #' \donttest{
 #' try({
-#'   download_dataset("Ressources en eau- Gouvernorat de Kasserine", format = "xls")
+#'   download_dataset(
+#'     "Ressources en eau- Gouvernorat de Kasserine",
+#'     format = "xls",
+#'     download_dir = tempdir()
+#'  )
 #' })
 #' }
 #'
@@ -72,7 +76,7 @@ download_dataset <- function(title, download_dir = "datasets", format = NULL) {
   logger::log_info("Starting downloads to directory: {download_dir}")
 
   results <- resources |>
-    purrr::pmap(~.download_resource(..3, ..1, ..2, download_dir)) |>
+    purrr::pmap(~ .download_resource(..3, ..1, ..2, download_dir)) |>
     purrr::compact()
 
   logger::log_info("Download complete: {length(results)} files downloaded")

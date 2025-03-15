@@ -18,10 +18,8 @@ A data frame of keywords/tags with counts.
 Retrieves a list of unique keywords/tags from the Tunisian data catalog API.
 }
 \examples{
-\donttest{
 try({
-keywords <- get_keywords(limit = 10)
+  get_keywords(limit = 10)
 })
-}
 
 }

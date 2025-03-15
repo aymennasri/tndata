@@ -10,12 +10,10 @@
 #' }
 #'
 #' @examples
-#' \donttest{
 #' try({
 #'   themes_summary <- get_themes()
 #'   head(themes_summary)
 #' })
-#' }
 #'
 #' @export
 #' @importFrom httr2 request req_url_query req_perform resp_status resp_body_raw
@@ -73,12 +71,10 @@ get_themes <- function() {
 #' }
 #'
 #' @examples
-#' \donttest{
 #' try({
 #'   datasets <- get_datasets("agriculture")
 #'   head(datasets)
 #' })
-#' }
 #'
 #' @export
 #' @importFrom httr2 request req_url_query req_perform req_retry
@@ -202,12 +198,10 @@ get_datasets <- function(keyword = NULL, author = NULL, organization = NULL, max
 #' }
 #'
 #' @examples
-#' \donttest{
 #' try({
-#'   authors <- get_authors()
+#'   authors <- get_authors(max_datasets = 100)
 #'   head(authors)
 #' })
-#' }
 #'
 #' @export
 #' @importFrom httr2 request req_url_query req_perform req_retry
@@ -292,13 +286,11 @@ get_authors <- function(max_datasets = 1000) {
 #' }
 #'
 #' @examples
-#' \donttest{
 #' try({
 #'   # Get all organizations with at least 5 datasets
 #'   orgs <- get_organizations(min_count = 5)
 #'   head(orgs)
 #' })
-#' }
 #'
 #' @export
 #' @importFrom httr2 request req_url_query req_perform resp_status
@@ -367,11 +359,9 @@ get_organizations <- function(min_count = 1) {
 #' @return A data frame of keywords/tags with counts.
 #'
 #' @examples
-#' \donttest{
 #' try({
-#' keywords <- get_keywords(limit = 10)
+#'   get_keywords(limit = 10)
 #' })
-#' }
 #'
 #' @export
 #' @importFrom httr2 request req_url_query req_perform

@@ -40,11 +40,9 @@ A tibble (data frame) with the following columns:
 Fetches datasets by keyword and/or author
 }
 \examples{
-\donttest{
 try({
   datasets <- get_datasets("agriculture")
   head(datasets)
 })
-}
 
 }

@@ -18,11 +18,9 @@ Fetches and summarizes themes (groups) alongside the number of datasets in
 each theme from the Tunisian data catalog API (data.gov.tn).
 }
 \examples{
-\donttest{
 try({
   themes_summary <- get_themes()
   head(themes_summary)
 })
-}
 
 }

@@ -23,7 +23,11 @@ Downloads a dataset from the Tunisian data catalog API (data.gov.tn).
 \examples{
 \donttest{
 try({
-  download_dataset("Ressources en eau- Gouvernorat de Kasserine", format = "xls")
+  download_dataset(
+    "Ressources en eau- Gouvernorat de Kasserine",
+    format = "xls",
+    download_dir = tempdir()
+ )
 })
 }
 

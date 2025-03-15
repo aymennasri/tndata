@@ -25,12 +25,10 @@ Retrieves organizations data from the Tunisian data catalog API
 that have published datasets.
 }
 \examples{
-\donttest{
 try({
   # Get all organizations with at least 5 datasets
   orgs <- get_organizations(min_count = 5)
   head(orgs)
 })
-}
 
 }
