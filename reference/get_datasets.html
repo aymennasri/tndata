@@ -96,24 +96,22 @@ to 100.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">datasets</span> <span class="op">&lt;-</span> <span class="fu">get_datasets</span><span class="op">(</span><span class="st">"agriculture"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">datasets</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-07 00:49:44] Adding keyword filter: agriculture</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-07 00:49:44] Searching for datasets...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-07 00:49:46] Displaying 100 out of 1033 total datasets</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-15 13:48:10] Adding keyword filter: agriculture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-15 13:48:10] Searching for datasets...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-15 13:48:11] Displaying 100 out of 1034 total datasets</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 9</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   id            title name  author notes organization created modified resources</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> bccf2ae5-80f… Docu… docu… Minis… <span style="color: #949494;">"</span>Doc… onagri-dept  2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 110715c9-86a… List… list… Minis… <span style="color: #949494;">"</span>Lis… crda-sfax    2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 54193e00-934… Evol… evol… CRDA … <span style="color: #949494;">"</span>Don… crda-sfax    2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 0996cd13-f99… Form… form… CRDA … <span style="color: #949494;">"</span>Lis… crda-sfax    2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> b8fb127e-c91… Répa… 2022  Asma … <span style="color: #949494;">"</span>Rép… agence-de-p… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 7ddaa932-50c… La r… decl… Asma … <span style="color: #949494;">"</span>La … agence-de-p… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 110715c9-86a… List… list… Minis… <span style="color: #949494;">"</span>Lis… ministere-d… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 54193e00-934… Evol… evol… CRDA … <span style="color: #949494;">"</span>Don… ministere-d… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 0996cd13-f99… Form… form… CRDA … <span style="color: #949494;">"</span>Lis… ministere-d… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 92f521b9-533… Evol… evol… TRABE… <span style="color: #949494;">"</span>Evo… ministere-d… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 38e6832c-c39… Evol… evol… TRABE… <span style="color: #949494;">"</span>Evo… ministere-d… 2025-0… 2025-03… <span style="color: #949494;">&lt;tibble&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -65,21 +65,19 @@ by fetching datasets and extracting unique author information.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="op">{</span></span></span>
-<span class="r-in"><span>  <span class="va">authors</span> <span class="op">&lt;-</span> <span class="fu">get_authors</span><span class="op">(</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">authors</span> <span class="op">&lt;-</span> <span class="fu">get_authors</span><span class="op">(</span>max_datasets <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">authors</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-07 00:49:42] Fetching datasets to extract author information...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-07 00:49:44] Successfully extracted 85 unique authors from 1000 datasets</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-15 13:48:09] Fetching datasets to extract author information...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> INFO [2025-03-15 13:48:10] Successfully extracted 20 unique authors from 100 datasets</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                                     name count</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Ministère de l'Agriculture, des Ressources Hydrauliques et de la Pêche   563</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                                 rhaimi    29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                            Nawel Ajabi    28</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                         TRABELSI LILIA    27</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                            Riadh Kouki    24</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                                           chebbi ines     23</span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Ministère de l'Agriculture, des Ressources Hydrauliques et de la Pêche    59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                            Afef chachi    10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                    Ministère de l'Industrie, des Mines et de l’Energie     5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                            Houwaida Harrabi Ep Belféki     4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                            Nawel Ajabi     4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                                                            Afef chechi     2</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
