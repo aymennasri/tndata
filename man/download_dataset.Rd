@@ -4,13 +4,12 @@
 \alias{download_dataset}
 \title{Download Dataset}
 \usage{
-download_dataset(title, download_dir = "datasets", format = NULL)
+download_dataset(title, download_dir, format = NULL)
 }
 \arguments{
 \item{title}{Character. Display name of the dataset to download.}
 
-\item{download_dir}{Character. Directory to save the downloaded dataset at,
-defaults to "datasets".}
+\item{download_dir}{Character. Directory to save the downloaded dataset at.}
 
 \item{format}{Character. Format of the dataset to download.}
 }

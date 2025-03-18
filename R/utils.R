@@ -12,7 +12,7 @@ utils::globalVariables(c(".data"))
 #' @keywords internal
 #' @noRd
 
-.download_resource <- function(url, name, format, download_dir = "datasets") {
+.download_resource <- function(url, name, format, download_dir) {
   tryCatch(
     {
       filename <- paste0(

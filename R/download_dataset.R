@@ -3,8 +3,7 @@
 #' Downloads a dataset from the Tunisian data catalog API (data.gov.tn).
 #'
 #' @param title Character. Display name of the dataset to download.
-#' @param download_dir Character. Directory to save the downloaded dataset at,
-#'   defaults to "datasets".
+#' @param download_dir Character. Directory to save the downloaded dataset at.
 #' @param format Character. Format of the dataset to download.
 #'
 #' @return The demanded dataset in the demanded path.
@@ -31,7 +30,7 @@
 #' @importFrom glue glue
 #' @importFrom fs dir_create
 
-download_dataset <- function(title, download_dir = "datasets", format = NULL) {
+download_dataset <- function(title, download_dir, format = NULL) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
   logger::log_info("Starting download for dataset: {title}")
 
