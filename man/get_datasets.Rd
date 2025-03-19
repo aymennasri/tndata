@@ -37,7 +37,7 @@ A tibble (data frame) with the following columns:
 }
 }
 \description{
-Fetches datasets by keyword and/or author
+Fetches datasets by keyword, author and/or organization.
 }
 \examples{
 try({

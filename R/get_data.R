@@ -48,7 +48,7 @@ get_themes <- function() {
 
 #' List Available Datasets
 #'
-#' Fetches datasets by keyword and/or author
+#' Fetches datasets by keyword, author and/or organization.
 #'
 #' @param keyword Character. Keyword to search for in dataset titles.
 #' @param author Character. Author name to filter datasets by.
