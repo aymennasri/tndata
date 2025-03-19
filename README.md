@@ -4,7 +4,8 @@
 # tndata <a href="http://aymennasri.me/tndata/"><img src="man/figures/logo.png" align="right" height="139" alt="tndata website" /></a>
 
 <!-- badges: start -->
-<!-- [![](https://cranlogs.r-pkg.org/badges/grand-total/tndata)](https://cran.r-project.org/package=tndata) -->
+
+[![](https://cranlogs.r-pkg.org/badges/grand-total/tndata)](https://cran.r-project.org/package=tndata)
 <!-- badges: end -->
 
 ## Overview
@@ -16,12 +17,12 @@ the official [data.gov.tn](https://data.gov.tn/fr/) CKAN API.
 
 ## Installation
 
-You can install the development version of tndata from
-[GitHub](https://github.com/) with:
+You can install the latest version of tndata from
+[CRAN](https://cran.r-project.org/package=tndata) with:
 
 ``` r
 # install.packages("pak")
-pak::pak("aymennasri/tndata")
+pak::pak("tndata")
 ```
 
 ## Example
