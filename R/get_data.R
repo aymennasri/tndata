@@ -16,9 +16,6 @@
 #' })
 #'
 #' @export
-#' @importFrom httr2 request req_url_query req_perform resp_status resp_body_raw
-#' @importFrom jsonlite fromJSON
-#' @importFrom dplyr filter arrange desc tibble
 
 get_themes <- function() {
   response <- httr2::request(
@@ -77,13 +74,6 @@ get_themes <- function() {
 #' })
 #'
 #' @export
-#' @importFrom httr2 request req_url_query req_perform req_retry
-#' @importFrom httr2 resp_status resp_body_json resp_check_status
-#' @importFrom dplyr tibble
-#' @importFrom purrr map_df
-#' @importFrom logger log_info log_warn log_error
-#' @importFrom glue glue
-#' @importFrom lubridate ymd_hms
 
 get_datasets <- function(keyword = NULL, author = NULL, organization = NULL, max_results = 100) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
@@ -204,11 +194,6 @@ get_datasets <- function(keyword = NULL, author = NULL, organization = NULL, max
 #' })
 #'
 #' @export
-#' @importFrom httr2 request req_url_query req_perform req_retry
-#' @importFrom httr2 resp_body_json resp_check_status
-#' @importFrom dplyr tibble count arrange desc
-#' @importFrom logger log_info log_warn log_error
-#' @importFrom glue glue
 
 get_authors <- function(max_datasets = 1000) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
@@ -293,11 +278,6 @@ get_authors <- function(max_datasets = 1000) {
 #' })
 #'
 #' @export
-#' @importFrom httr2 request req_url_query req_perform resp_status
-#' @importFrom httr2 resp_body_json
-#' @importFrom dplyr arrange desc filter tibble
-#' @importFrom logger log_info log_warn log_error log_success
-#' @importFrom purrr map_df
 
 get_organizations <- function(min_count = 1) {
   logger::log_info("Retrieving organizations using faceted search")
@@ -364,11 +344,6 @@ get_organizations <- function(min_count = 1) {
 #' })
 #'
 #' @export
-#' @importFrom httr2 request req_url_query req_perform
-#' @importFrom httr2 req_retry resp_body_json resp_check_status
-#' @importFrom dplyr arrange desc
-#' @importFrom purrr map_df
-#' @importFrom logger log_info log_error
 
 get_keywords <- function(limit = 10, query = NULL) {
   facet_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"

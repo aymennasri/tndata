@@ -20,15 +20,6 @@
 #' }
 #'
 #' @export
-#' @importFrom httr2 request req_url_query req_retry req_perform resp_body_json
-#' @importFrom dplyr filter mutate
-#' @importFrom purrr pmap compact
-#' @importFrom fs dir_delete
-#' @importFrom stringr str_replace_all str_to_lower
-#' @importFrom utils URLencode
-#' @importFrom logger log_info log_error log_success
-#' @importFrom glue glue
-#' @importFrom fs dir_create
 
 download_dataset <- function(title, download_dir, format = NULL) {
   api_url <- "https://catalog.data.gov.tn/fr/api/3/action/package_search"
